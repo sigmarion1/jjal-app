@@ -1,0 +1,9 @@
+version: "3"
+services:
+  jjalapp:
+    build: ./
+    restart: always
+networks:
+  default:
+    external:
+      name: external-network

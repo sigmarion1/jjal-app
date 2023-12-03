@@ -1,3 +1,13 @@
 {% extends "layout.html" %}
+{% block og %}
+<meta property="og:description" content="{{image.name}}" />
+<meta property="og:image" content="https://jjal.app/{{image.thumbnail_url}}" /> 
+{% endblock %}
 {% block content %}
-{{image_name}}{% endblock %}
+<img src={{image.url}} class="img-fluid" alt="Responsive image">
+
+<h1>
+    {{image.name}}
+</h1>
+
+{% endblock %}

@@ -1,4 +1,19 @@
 {% extends "layout.html" %}
+
+{% block og %}
+<meta property="og:description" content="이미지 업로드가 가능한 주소입니다" />
+<meta property="og:image" content="https://jjal.app/static/upload.png" /> 
+{% endblock %}
+
 {% block content %}
-이미지가 없어요 업로드해주세요
+
+<h1>비어 있는 공간을 발견했습니다!!</h1>
+<p>이미지 업로드를 하면 https://jjal.app/{{image_name}} 으로 접근이 가능합니다</p>
+
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="file" class="real-upload" accept="image/*" required>
+    <button type="submit" class="btn btn-primary">올리기</button>
+  </form>
+
+
 {% endblock %}

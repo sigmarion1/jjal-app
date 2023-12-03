@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from fastapi import FastAPI, Request, Depends, File, UploadFile
 from fastapi.templating import Jinja2Templates
@@ -34,17 +35,36 @@ def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.post("/upload/{image_name}")
+@app.get("/{image_name}", response_class=HTMLResponse)
+async def read_item(request: Request, image_name: str, db: Session = Depends(get_db)):
+    image = db.query(ImageModel).filter(ImageModel.name == image_name).first()
+
+    if image:
+        return templates.TemplateResponse(
+            "image.html", {"request": request, "image": image}
+        )
+
+    return templates.TemplateResponse(
+        "upload.html", {"request": request, "image_name": image_name}
+    )
+
+
+@app.post("/{image_name}", response_class=HTMLResponse)
 async def upload_image(
-    file: UploadFile, image_name: str, db: Session = Depends(get_db)
+    request: Request, file: UploadFile, image_name: str, db: Session = Depends(get_db)
 ):
     if not file:
-        return {"message": "no file"}
+        return templates.TemplateResponse(
+            "error.html", {"request": request, "error_message": "no file"}
+        )
 
     ext = file.filename.split(".")[-1]
 
-    if ext not in ("jpg", "png", "bmp", "gif", "tiff"):
-        return {"message": "unsupported image file"}
+    if ext not in ("jpg", "jpeg", "png", "bmp", "gif", "tiff"):
+        return templates.TemplateResponse(
+            "error.html",
+            {"request": request, "error_message": "unsupported image format"},
+        )
 
     content = await file.read()
     temp_file = os.path.join("temp", file.filename)
@@ -55,8 +75,13 @@ async def upload_image(
     ) as fp:
         fp.write(content)  # 서버 로컬 스토리지에 이미지 저장 (쓰기)
 
-    image_file = "image/" + image_name + ".png"
-    thumbnail_file = "image/" + image_name + "_th" + ".png"
+    image_dir = os.path.join("image", datetime.now().strftime("%Y_%m"))
+
+    if not os.path.exists(image_dir):
+        os.makedirs(image_dir)
+
+    image_file = os.path.join(image_dir, image_name + ".png")
+    thumbnail_file = os.path.join(image_dir, image_name + "_th.png")
 
     image = Image.open(temp_file)
     image.thumbnail((1024, 1024))
@@ -70,18 +95,6 @@ async def upload_image(
 
     os.remove(temp_file)
 
-    return {"filename": file.filename}
-
-
-@app.get("/{image_name}", response_class=HTMLResponse)
-async def read_item(request: Request, image_name: str, db: Session = Depends(get_db)):
-    image = db.query(ImageModel).filter(ImageModel.name == image_name).first()
-
-    if image:
-        return templates.TemplateResponse(
-            "image.html", {"request": request, "image_name": image_name}
-        )
-
     return templates.TemplateResponse(
-        "upload.html", {"request": request, "image_name": image_name}
+        "image.html", {"request": request, "image": newImage}
     )

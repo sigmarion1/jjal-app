@@ -31,8 +31,12 @@ def get_db():
 
 
 @app.get("/", response_class=HTMLResponse)
-def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+def read_root(request: Request, db: Session = Depends(get_db)):
+    image_count = db.query(ImageModel).count()
+
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "image_count": image_count}
+    )
 
 
 @app.get("/{image_name}", response_class=HTMLResponse)

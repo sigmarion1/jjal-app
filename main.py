@@ -41,6 +41,7 @@ def read_root(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/{image_name}", response_class=HTMLResponse)
 async def read_item(request: Request, image_name: str, db: Session = Depends(get_db)):
+    image_name = image_name.lower()
     image = db.query(ImageModel).filter(ImageModel.name == image_name).first()
 
     if image:
@@ -57,6 +58,7 @@ async def read_item(request: Request, image_name: str, db: Session = Depends(get
 async def upload_image(
     request: Request, file: UploadFile, image_name: str, db: Session = Depends(get_db)
 ):
+    image_name = image_name.lower()
     if not file:
         return templates.TemplateResponse(
             "error.html", {"request": request, "error_message": "no file"}

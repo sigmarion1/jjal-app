@@ -11,8 +11,8 @@
     <input class="btn btn-primary" type="submit" value="만들어보기">
   </form>
   <hr class="col-1 my-4">
-
-  <a href="https://github.com/sigmarion1/jjal-app" class="btn btn-primary">View on GitHub</a>
+  <h4>현재 업로드된 이미지 수 : {{image_count}}</h3>
+  <a href="https://github.com/sigmarion1/jjal-app" class="btn btn-primary">View on GitHub</a>  
   <script>
     document.getElementById('keyForm').onsubmit = function () {
       window.location.href = "/" + document.getElementById('key').value;

@@ -60,7 +60,7 @@ async def upload_image(
 
     ext = file.filename.split(".")[-1]
 
-    if ext not in ("jpg", "jpeg", "png", "bmp", "gif", "tiff"):
+    if ext not in ("jpg", "jpeg", "png", "bmp", "gif", "tiff", "webp"):
         return templates.TemplateResponse(
             "error.html",
             {"request": request, "error_message": "unsupported image format"},

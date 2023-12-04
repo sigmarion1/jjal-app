@@ -30,7 +30,8 @@
   <h1>비어 있는 공간을 발견했습니다!!</h1>
   <p>이미지 업로드를 하면 https://jjal.app/{{image_name}} 으로 접근이 가능합니다</p>
   <label class="label" data-toggle="tooltip" title="여기를 눌러서 업로드하세요">
-    <img class="rounded" id="upload" src="/static/upload.png" width="200px">
+    <img class="rounded" id="upload"
+      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
     <input type="file" class="sr-only" id="input" name="image" accept="image/*">
   </label>
   <div class="progress">
@@ -49,7 +50,8 @@
         </div>
         <div class="modal-body">
           <div class="img-container">
-            <img id="image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" >
+            <img id="image"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
           </div>
         </div>
         <div class="modal-footer">
@@ -156,7 +158,11 @@
             },
 
             success: function () {
-              $alert.show().addClass('alert-success').text('업로드 완료 새로고침하면 이미지 확인이 가능합니다');
+              $alert.show().addClass('alert-success').text('업로드 완료');
+              // 1 second delay
+              setTimeout(function () {
+                location.reload();
+              }, 1000);
             },
 
             error: function () {

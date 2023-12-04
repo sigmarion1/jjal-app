@@ -1,17 +1,183 @@
 {% extends "layout.html" %}
 
 {% block og %}
+<link rel="stylesheet" href="https://unpkg.com/cropperjs@1.4.3/dist/cropper.min.css">
+<style>
+  .label {
+    cursor: pointer;
+  }
+
+  .progress {
+    display: none;
+    margin-bottom: 1rem;
+  }
+
+  .alert {
+    display: none;
+  }
+
+  .img-container img {
+    max-width: 100%;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 
-<h1>비어 있는 공간을 발견했습니다!!</h1>
-<p>이미지 업로드를 하면 https://jjal.app/{{image_name}} 으로 접근이 가능합니다</p>
 
-<form method="post" enctype="multipart/form-data">
-    <input type="file" name="file" class="real-upload" accept="image/*" required>
-    <button type="submit" class="btn btn-primary">올리기</button>
-  </form>
+<div class="container">
+  <h1>비어 있는 공간을 발견했습니다!!</h1>
+  <p>이미지 업로드를 하면 https://jjal.app/{{image_name}} 으로 접근이 가능합니다</p>
+  <label class="label" data-toggle="tooltip" title="여기를 눌러서 업로드하세요">
+    <img class="rounded" id="upload"
+      src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+    <input type="file" class="sr-only" id="input" name="image" accept="image/*">
+  </label>
+  <div class="progress">
+    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0"
+      aria-valuemin="0" aria-valuemax="100">0%</div>
+  </div>
+  <div class="alert" role="alert"></div>
+  <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">이미지 자르기</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="img-container">
+            <img id="image"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+          <button type="button" class="btn btn-primary" id="crop">자르기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/jquery@3/dist/jquery.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap@4/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/cropperjs@1.4.3/dist/cropper.min.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    var upload = document.getElementById('upload');
+    var image = document.getElementById('image');
+    var input = document.getElementById('input');
+    var $progress = $('.progress');
+    var $progressBar = $('.progress-bar');
+    var $alert = $('.alert');
+    var $modal = $('#modal');
+    var cropper;
+
+    $('[data-toggle="tooltip"]').tooltip();
+
+    input.addEventListener('change', function (e) {
+      var files = e.target.files;
+      var done = function (url) {
+        input.value = '';
+        image.src = url;
+        $alert.hide();
+        $modal.modal('show');
+      };
+      var reader;
+      var file;
+      var url;
+
+      if (files && files.length > 0) {
+        file = files[0];
+
+        if (URL) {
+          done(URL.createObjectURL(file));
+        } else if (FileReader) {
+          reader = new FileReader();
+          reader.onload = function (e) {
+            done(reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    $modal.on('shown.bs.modal', function () {
+      cropper = new Cropper(image, {
+        aspectRatio: 2,
+        viewMode: 3,
+      });
+    }).on('hidden.bs.modal', function () {
+      cropper.destroy();
+      cropper = null;
+    });
+
+    document.getElementById('crop').addEventListener('click', function () {
+      var initialUpload;
+      var canvas;
+
+      $modal.modal('hide');
+
+      if (cropper) {
+        canvas = cropper.getCroppedCanvas({
+          width: 320,
+          height: 160,
+        });
+        initialUpload = upload.src;
+        upload.src = canvas.toDataURL();
+        $progress.show();
+        $alert.removeClass('alert-success alert-warning');
+        canvas.toBlob(function (blob) {
+          var formData = new FormData();
+
+          formData.append('file', blob, 'upload.jpg');
+          $.ajax('', {
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            xhr: function () {
+              var xhr = new XMLHttpRequest();
+
+              xhr.upload.onprogress = function (e) {
+                var percent = '0';
+                var percentage = '0%';
+
+                if (e.lengthComputable) {
+                  percent = Math.round((e.loaded / e.total) * 100);
+                  percentage = percent + '%';
+                  $progressBar.width(percentage).attr('aria-valuenow', percent).text(percentage);
+                }
+              };
+
+              return xhr;
+            },
+
+            success: function () {
+              $alert.show().addClass('alert-success').text('업로드 완료');
+              // 1 second delay
+              setTimeout(function () {
+                location.reload();
+              }, 1000);
+            },
+
+            error: function () {
+              upload.src = initialUpload;
+              $alert.show().addClass('alert-warning').text('업로드 오류');
+            },
+
+            complete: function () {
+              $progress.hide();
+            },
+          });
+        });
+      }
+    });
+  });
+</script>
 
 
 {% endblock %}

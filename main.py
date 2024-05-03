@@ -56,13 +56,21 @@ async def read_item(request: Request, image_name: str, db: Session = Depends(get
 
 @app.post("/{image_name}", response_class=HTMLResponse)
 async def upload_image(
-    request: Request, file: UploadFile, image_name: str, db: Session = Depends(get_db)
+    request: Request,
+    original: UploadFile,
+    thumbnail: UploadFile,
+    image_name: str,
+    db: Session = Depends(get_db),
 ):
     image_name = image_name.lower()
-    if not file:
-        return templates.TemplateResponse(
-            "error.html", {"request": request, "error_message": "no file"}
-        )
+
+    print(len(original), len(thumbnail))
+    # if not file:
+    #     return templates.TemplateResponse(
+    #         "error.html", {"request": request, "error_message": "no file"}
+    #     )
+
+    file = files[0]
 
     ext = file.filename.split(".")[-1]
 
@@ -92,7 +100,7 @@ async def upload_image(
     image = Image.open(temp_file)
     image.thumbnail((1024, 1024))
     image.save(image_file)
-    image.thumbnail((512, 512))
+    image.thumbnail((800, 400))
     image.save(thumbnail_file)
 
     newImage = ImageModel(name=image_name, url=image_file, thumbnail_url=thumbnail_file)

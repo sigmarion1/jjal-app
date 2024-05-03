@@ -42,7 +42,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalLabel">이미지 자르기</h5>
+          <h5 class="modal-title" id="modalLabel">미리보기 이미지 만들기</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -55,7 +55,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
-          <button type="button" class="btn btn-primary" id="crop">자르기</button>
+          <button type="button" class="btn btn-primary" id="crop">미리보기 추가</button>
         </div>
       </div>
     </div>
@@ -65,6 +65,9 @@
 <script src="https://unpkg.com/bootstrap@4/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/cropperjs@1.4.3/dist/cropper.min.js"></script>
 <script>
+
+  var file;
+
   window.addEventListener('DOMContentLoaded', function () {
     var upload = document.getElementById('upload');
     var image = document.getElementById('image');
@@ -86,7 +89,6 @@
         $modal.modal('show');
       };
       var reader;
-      var file;
       var url;
 
       if (files && files.length > 0) {
@@ -131,8 +133,8 @@
         $alert.removeClass('alert-success alert-warning');
         canvas.toBlob(function (blob) {
           var formData = new FormData();
-
-          formData.append('file', blob, 'upload.jpg');
+          formData.append('thumbnail', blob, 'upload.jpg');
+          formData.append('original', file, 'test.jpg')
           $.ajax('', {
             method: 'POST',
             data: formData,

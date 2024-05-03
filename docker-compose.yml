@@ -6,7 +6,3 @@ services:
     volumes:
       - ./image:/usr/src/app/image
       - ./sqlite.db:/usr/src/app/sqlite.db
-networks:
-  default:
-    external:
-      name: external-network

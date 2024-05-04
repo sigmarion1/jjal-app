@@ -3,7 +3,8 @@ services:
   jjalapp:
     build: ./
     restart: always
-    port: "8003:8000"
+    ports:
+      - "8003:8000"
     volumes:
       - ./image:/usr/src/app/image
       - ./sqlite.db:/usr/src/app/sqlite.db
